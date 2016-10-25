@@ -8,7 +8,6 @@ The script will query for username and password when run, or could be provided
 via command line arguments.
 
 Args:
-(m) - mandatory
 (o) - optional
 (e) - mutually exclusive
 
@@ -16,7 +15,7 @@ Args:
 --qdescr         (e) Name used to filter query for the target interface policy group
 --listSelect     (e) Select the target policy group from a list
 --listFilter     (o) Wildcard filter used on description field to build pg list
---pgname         (m) Name of the newly cloned policy group
+--pgname         (o) Name of the newly cloned policy group
 --descr          (o) Description of the newly cloned policy group
 --verbose        (o) Enable verbose logging
 
@@ -53,12 +52,13 @@ def main():
     group.add_argument('--qdescr', help='Filter the query by description')
     group.add_argument('--listSelect', help='Select the target policy from a list',action='store_true')
     creds.add_argument('--listFilter', help='Wildcard filter used on description field to build pg list ', required=False, default="")
-    creds.add_argument('--pgname', help='Name of the cloned policy group', required=True)
+    creds.add_argument('--pgname', help='Name of the cloned policy group', required=False,default="")
     creds.add_argument('--descr', help='Description for the cloned policy group', required=False, default="")
     creds.add_argument('--verbose', help='Enable verbose logging', required=False,action='store_true')
 
     args = creds.get()
-
+    if not args.pgname:
+        args.pgname = raw_input("\nPlease enter a name for the new policy group: ")
     # Login to APIC
     session = aci.Session(args.url, args.login, args.password)
     resp = session.login()
@@ -128,7 +128,7 @@ def main():
         print('%% Error: Could not push configuration to APIC')
         print(resp.text)
     else:
-        print '%% Success: '+originalName+' successfully cloned to '+args.pgname
+        print "\n%% Success: "+originalName+' successfully cloned to '+args.pgname+"\n\n"
 
     session.close()
 
