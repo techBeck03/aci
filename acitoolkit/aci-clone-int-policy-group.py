@@ -1,6 +1,7 @@
 """
 This script leverages the acitoolkit to clone an existing
-interface policy group specified either by name or description.
+interface policy group specified either by name, description, or selected from
+a printed list.
 
 
 The script will query for username and password when run, or could be provided
