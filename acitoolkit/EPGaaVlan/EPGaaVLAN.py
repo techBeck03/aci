@@ -2,29 +2,29 @@ from acitoolkit import *
 import json
 import os
 import csv
-from argparse import ArgumentParser
 
-parser = ArgumentParser(description='ACIToolkit script for configuring Network-Centric ACI Policies from existing VLANs')
-parser.add_argument('--vlanPool', help='Vlan Pool Name', required=True)
-parser.add_argument('--vlanNumber', help='Vlan Number', required=False)
-parser.add_argument('--vlanDescription', help='Vlan Description', required=False)
-parser.add_argument('--networkTenant', help='Network Tenant', required=True)
-parser.add_argument('--vrf', help='vrf', required=True)
-parser.add_argument('--applicationTenant', help='Application Tenant',required=True)
-parser.add_argument('--applicationNetworkProfile', help='Application Network Profile',required=True)
-parser.add_argument('--vlanName', help='VLAN/EPG Name',required=False)
-parser.add_argument('--csv', help='csv filename for import',required=False)
-parser.add_argument('--enableRouting', help='Enable unicast routing within BD',required=False, action='store_true')
-parser.add_argument('--enableFlooding', help='Enable flooding within BD',required=False, action='store_true')
-parser.add_argument('--gatewayIP', help='X.X.X.X/X Gateway IP',required=False)
-parser.add_argument('--apicUrl', help='APIC URL',required=True)
-parser.add_argument('--apicUsername', help='APIC Username',required=True)
-parser.add_argument('--apicPassword', help='APIC Password',required=True)
-parser.add_argument('--vzany', help='Use VZAny',required=False,action='store_true')
-args = vars(parser.parse_args())
+description='ACIToolkit script for configuring Network-Centric ACI Policies from existing VLANs'
+creds = Credentials('apic', description)
+creds.add_argument('--vlanPool', help='Vlan Pool Name', required=True)
+creds.add_argument('--vlanNumber', help='Vlan Number', required=False)
+creds.add_argument('--vlanDescription', help='Vlan Description', required=False)
+creds.add_argument('--networkTenant', help='Network Tenant', required=True)
+creds.add_argument('--vrf', help='vrf', required=True)
+creds.add_argument('--applicationTenant', help='Application Tenant',required=True)
+creds.add_argument('--applicationNetworkProfile', help='Application Network Profile',required=True)
+creds.add_argument('--vlanName', help='VLAN/EPG Name',required=False)
+creds.add_argument('--csv', help='csv filename for import',required=False)
+creds.add_argument('--enableRouting', help='Enable unicast routing within BD',required=False, action='store_true')
+creds.add_argument('--enableFlooding', help='Enable flooding within BD',required=False, action='store_true')
+creds.add_argument('--gatewayIP', help='X.X.X.X/X Gateway IP',required=False)
+creds.add_argument('--apicUrl', help='APIC URL',required=True)
+creds.add_argument('--apicUsername', help='APIC Username',required=True)
+creds.add_argument('--apicPassword', help='APIC Password',required=True)
+creds.add_argument('--vzany', help='Use VZAny',required=False,action='store_true')
+args = creds.get()
 
 if args["csv"] is None and (args["vlanNumber"] is None or args["vlanName"] is None or args["gatewayIP"] is None):
-    parser.error("Either a csv or specific vlan #, vlan name, and gateway IP is required.  Please see help for details")
+    creds.error("Either a csv or specific vlan #, vlan name, and gateway IP is required.  Please see help for details")
 
 def prettyPrint(target):
     print json.dumps(target.get_json(),sort_keys=True,indent=4)
@@ -84,7 +84,7 @@ def GetVlanGroups(vlans):
 networkTenant = Tenant(args["networkTenant"])
 vrf = Context(args["vrf"],networkTenant)
 appTenant = Tenant(args["applicationTenant"])
-if
+
 app = AppProfile(args["applicationNetworkProfile"],appTenant)
 vlan_list = []
 if args["csv"] is not None:
@@ -100,11 +100,12 @@ else:
     vlan_list.append(int(args["vlanNumber"]))
 
 # Login to APIC
-session = Session(args["apicUrl"], args["apicUsername"], args["apicPassword"])
+session = aci.Session(args.url, args.login, args.password)
 resp = session.login()
 if not resp.ok:
     print('%% Could not login to APIC')
-    exitFunc()
+    sys.exit(0)
+
 prettyPrint(networkTenant)
 print networkTenant.push_to_apic(session)
 appTenant.push_to_apic(session)
@@ -115,7 +116,7 @@ session.close()
 
 '''
 Prod
-PS C:\Users\robbeck> py -2 .\EPGaaVLAN.py --networkTenant "common" --applicationTenant "Network-Centric-Prod" --applicationNetworkProfile "Network-EPGs" --apicUrl $apicPods[4].url --apicUsername $apicPods[4].usr --apicPassword $apicPods[4].pwd --vlanPool "Network-Centric-Prod-VLANs" --vrf "Prod" --csv prod_vlans.csv --enableRouting
+PS C:\Users\robbeck> py -2 .\EPGaaVLAN.py --networkTenant "common" --applicationTenant "Network-Centric-Prod" --applicationNetworkProfile "Network-EPGs" --vlanPool "Network-Centric-Prod-VLANs" --vrf "Prod" --csv prod_vlans.csv --enableRouting
 Dev
-PS C:\Users\robbeck> py -2 .\EPGaaVLAN.py --networkTenant "common" --applicationTenant "Basic-Tenant-DMZ" --applicationNetworkProfile "Network-EPGs" --apicUrl $apicPods[4].url --apicUsername $apicPods[4].usr --apicPassword $apicPods[4].pwd --vlanPool "Network-Centric-DMZ-VLANs" --vrf "DMZ" --csv dev_vlans.csv --enableRouting
+PS C:\Users\robbeck> py -2 .\EPGaaVLAN.py --networkTenant "common" --applicationTenant "Basic-Tenant-DMZ" --applicationNetworkProfile "Network-EPGs" --vlanPool "Network-Centric-DMZ-VLANs" --vrf "DMZ" --csv dev_vlans.csv --enableRouting
 '''
