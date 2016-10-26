@@ -1,41 +1,45 @@
-# Prerequisites
-- On Ubuntu, you will need to run the following to get some dependencies
-```
-sudo apt-get install ruby-dev ruby-libxml zlib1g-dev nodejs
-```
+# EPGaaVlan
 
-# Installation
-- Make sure you have ruby gems installed  
-  - https://rubygems.org/pages/download
-- Next, install dashing following the steps on the website  
-  - http://shopify.github.io/dashing/  
-  
-  Or, just run the following at your terminal.  
-  **Note**: you may need to prefix this with sudo depending on your installation  
-```
-gem install dashing bundler
-gem install acirb
-```
-- Change into the acirb/examples/acidashboard folder  
-```
-cd acirb/examples/acidashboard
-```
-- Modify jobs/apic.erb to include your APIC IP address and credentials with an account that can query the objects being polled
-```
-apicuri = 'https://apic'
-username = 'admin'
-password = 'password'
-```
-- Run the "bundle" command
-```
-bundle
-```
-# Running
-- Run "dashing start" to start the dashboard
-```
-dashing start
-```
-- Access your local web server at http://localhost:3030
+This script leverages the acitoolkit to configure network centric policy using either manually passed arguments or through a csv.
 
-# More information
-Check out http://shopify.github.com/dashing for more information about dashing
+# Pre-requisites
+
+This script leverages the ACI Toolkit which must be installed prior to running.
+
+<ul><li>https://github.com/datacenter/acitoolkit.git</li></ul>
+
+# Usage Examples
+
+<ul><li>Deploy from csv with flooding enabled and routing disabled</ul></li>
+```
+python EPGaaVLAN.py --netTenant "common" `
+                    --appTenant "Network-Centric-Prod" `
+                    --anp "Network-EPGs" `
+                    --vlanPool "Network-Centric-Prod-VLANs" `
+                    --vrf "Prod" `
+                    --csv prod_vlans.csv `
+                    --enableFlooding
+```
+<ul><li>Deploy from csv with routing enabled and flooding disabled</ul></li>
+```
+python EPGaaVLAN.py --netTenant "common" `
+                    --appTenant "Network-Centric-Prod" `
+                    --anp "Network-EPGs" `
+                    --vlanPool "Network-Centric-Prod-VLANs" `
+                    --vrf "Prod" `
+                    --csv prod_vlans.csv `
+                    --enableRouting
+```
+<ul><li>Deploy single epg-vlan with flooding enabled and routing disabled</ul></li>
+```
+python EPGaaVLAN.py --netTenant "common" `
+                    --appTenant "Network-Centric-Prod" `
+                    --anp "Network-EPGs" `
+                    --vlanPool "Network-Centric-Prod-VLANs" `
+                    --vrf "Prod" `
+                    --vlanNumber "100" `
+                    --vlanName "10.100.1.0_24-Dev-Network" `
+                    --vlanDescr "imported from vlan-100" `
+                    --gateway "10.100.1.1/24" `
+                    --enableFlooding
+```
