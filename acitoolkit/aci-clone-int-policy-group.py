@@ -16,7 +16,7 @@ Args:
 --listSelect     (e) Select the target policy group from a list
 --listFilter     (o) Wildcard filter used on description field to build pg list
 --pgname         (o) Name of the newly cloned policy group
---pgtype         (o) Type of policty group to clone (acc,pc,vpc)
+--pgtype         (o) Type of policty group to clone (acc,pc,vpc) **default is vpc
 --descr          (o) Description of the newly cloned policy group
 --verbose        (o) Enable verbose logging
 
