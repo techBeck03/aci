@@ -39,6 +39,9 @@ python aci-clone-int-policy-group.py --listSelect --pgname aci-esx-06-vpc
 Select policy group to clone with "template" somewhere in the description
 python aci-clone-int-policy-group.py --listSelect --listFilter template --pgname aci-esx-06-vpc
 
+Clone access interface policy group using select list and interactive policy group naming
+python aci-clone-int-policy-group.py --listSelect --pgtype acc
+
 """
 import sys
 import os
