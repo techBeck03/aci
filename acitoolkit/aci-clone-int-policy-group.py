@@ -47,6 +47,7 @@ import sys
 import os
 import re
 import json
+import signal
 import acitoolkit.acitoolkit as aci
 from prettytable import PrettyTable
 
@@ -72,9 +73,18 @@ def main():
     # Login to APIC
     session = aci.Session(args.url, args.login, args.password)
     resp = session.login()
+
     if not resp.ok:
         print('%% Could not login to APIC')
         sys.exit(0)
+
+    # Gracefully close APIC session if interrupt is detected
+    def signal_handler(signum, frame):
+        if session.logged_in():
+            if args.verbose:
+                print "Interrupt detected closing session"
+            session.close()
+    signal.signal(signal.SIGINT, signal_handler)
 
     # Setup query filters
     if args.qname:
