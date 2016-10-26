@@ -10,7 +10,7 @@ This script leverages the ACI Toolkit which must be installed prior to running.
 
 # Usage Examples
 
-- Deploy from csv with flooding enabled and routing disabled
+### Deploy from csv with flooding enabled and routing disabled
 ```
 python EPGaaVLAN.py --netTenant "common" `
                     --appTenant "Network-Centric-Prod" `
@@ -20,7 +20,7 @@ python EPGaaVLAN.py --netTenant "common" `
                     --csv prod_vlans.csv `
                     --enableFlooding
 ```
-- Deploy from csv with routing enabled and flooding disabled
+### Deploy from csv with routing enabled and flooding disabled
 ```
 python EPGaaVLAN.py --netTenant "common" `
                     --appTenant "Network-Centric-Prod" `
@@ -30,7 +30,7 @@ python EPGaaVLAN.py --netTenant "common" `
                     --csv prod_vlans.csv `
                     --enableRouting
 ```
-- Deploy single epg-vlan with flooding enabled and routing disabled
+### Deploy single epg-vlan with flooding enabled and routing disabled
 ```
 python EPGaaVLAN.py --netTenant "common" `
                     --appTenant "Network-Centric-Prod" `
