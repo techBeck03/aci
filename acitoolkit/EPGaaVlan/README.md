@@ -1,16 +1,16 @@
-# EPGaaVlan
+## EPGaaVlan
 
 This script leverages the acitoolkit to configure network centric policy using either manually passed arguments or through a csv.
 
-# Pre-requisites
+## Pre-requisites
 
 This script leverages the ACI Toolkit which must be installed prior to running.
 
 - https://github.com/datacenter/acitoolkit.git
 
-# Usage Examples
+## Usage Examples
 
-### Deploy from csv with flooding enabled and routing disabled
+#### Deploy from csv with flooding enabled and routing disabled
 ```
 python EPGaaVLAN.py --netTenant "common" `
                     --appTenant "Network-Centric-Prod" `
@@ -20,7 +20,7 @@ python EPGaaVLAN.py --netTenant "common" `
                     --csv prod_vlans.csv `
                     --enableFlooding
 ```
-### Deploy from csv with routing enabled and flooding disabled
+#### Deploy from csv with routing enabled and flooding disabled
 ```
 python EPGaaVLAN.py --netTenant "common" `
                     --appTenant "Network-Centric-Prod" `
@@ -30,7 +30,7 @@ python EPGaaVLAN.py --netTenant "common" `
                     --csv prod_vlans.csv `
                     --enableRouting
 ```
-### Deploy single epg-vlan with flooding enabled and routing disabled
+#### Deploy single epg-vlan with flooding enabled and routing disabled
 ```
 python EPGaaVLAN.py --netTenant "common" `
                     --appTenant "Network-Centric-Prod" `
