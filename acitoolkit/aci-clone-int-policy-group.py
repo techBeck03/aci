@@ -16,6 +16,7 @@ Args:
 --listSelect     (e) Select the target policy group from a list
 --listFilter     (o) Wildcard filter used on description field to build pg list
 --pgname         (o) Name of the newly cloned policy group
+--pgtype         (o) Type of policty group to clone (acc,pc,vpc)
 --descr          (o) Description of the newly cloned policy group
 --verbose        (o) Enable verbose logging
 
@@ -58,6 +59,7 @@ def main():
     group.add_argument('--listSelect', help='Select the target policy from a list',action='store_true')
     creds.add_argument('--listFilter', help='Wildcard filter used on description field to build pg list ', required=False, default="")
     creds.add_argument('--pgname', help='Name of the cloned policy group', required=False,default="")
+    creds.add_argument('--pgtype', help='Type of policy group to clone (acc,pc,vpc)', choices=['acc','pc','vpc'], required=False,default="vpc")
     creds.add_argument('--descr', help='Description for the cloned policy group', required=False, default="")
     creds.add_argument('--verbose', help='Enable verbose logging', required=False,action='store_true')
 
@@ -77,12 +79,19 @@ def main():
     elif args.qdescr:
         qfilter = 'query-target-filter=and(eq(infraAccBndlGrp.descr,"'+args.qdescr+'"))'
     elif args.listSelect:
-        qfilter = 'query-target-filter=and(wcard(infraAccBndlGrp.descr,"'+args.listFilter+'"))'
+        choices =   {   'acc':  'query-target-filter=and(wcard(infraAccPortGrp.descr,"'+args.listFilter+'"))', \
+                        'pc':   'query-target-filter=and(wcard(infraAccBndlGrp.descr,"'+args.listFilter+'"),ne(infraAccBndlGrp.lagT,"node"))', \
+                        'vpc':  'query-target-filter=and(wcard(infraAccBndlGrp.descr,"'+args.listFilter+'"),eq(infraAccBndlGrp.lagT,"node"))' \
+                    }
+        qfilter = choices.get(args.pgtype)
     else:
         qfilter = ''
 
+    choices = {'acc': {'class':'infraAccPortGrp','dnPrefix':'accportgrp'}, 'pc': {'class':'infraAccBndlGrp','dnPrefix':'accbundle'},'vpc': {'class':'infraAccBndlGrp','dnPrefix':'accbundle'}}
+    classTarget = choices.get(args.pgtype)
+
     # Class url to query for interface policy groups
-    class_url = '/api/node/class/infraAccBndlGrp.json?'+qfilter+'&rsp-subtree=full&rsp-prop-include=config-only'
+    class_url = '/api/node/class/'+classTarget["class"]+'.json?'+qfilter+'&rsp-subtree=full&rsp-prop-include=config-only'
 
     # Send get request to APIC and validate results
     ret = session.get(class_url)
@@ -92,7 +101,7 @@ def main():
     if len(ret.json()["imdata"]) > 1 and not args.listSelect:
         print "%% Error: Multiple matches found:"
         for pg in ret.json()["imdata"]:
-            print pg["infraAccBndlGrp"]["attributes"]["dn"]
+            print pg[classTarget["class"]]["attributes"]["dn"]
         exit()
     if not args.listSelect:
         # Grab the json response containing the policy group
@@ -105,7 +114,7 @@ def main():
             selectList.align["Description"] = "l"
             selectList.padding_width = 2
             for index,pg in enumerate(ret.json()["imdata"]):
-                selectList.add_row([str(index+1)+")",pg["infraAccBndlGrp"]["attributes"]["name"],pg["infraAccBndlGrp"]["attributes"]["descr"]])
+                selectList.add_row([str(index+1)+")",pg[classTarget["class"]]["attributes"]["name"],pg[classTarget["class"]]["attributes"]["descr"]])
             print selectList
             selected = raw_input("\n\nPlease select interface policy group to be cloned: ")
             if int(selected) > 0 and int(selected) <= len(ret.json()["imdata"]):
@@ -117,21 +126,21 @@ def main():
                 print '****Invalid selection please select a number from the list below****'
 
     # Grab the original name of the cloned profile
-    originalName = clone["infraAccBndlGrp"]["attributes"]["name"]
+    originalName = clone[classTarget["class"]]["attributes"]["name"]
 
     # Rename clone properties
-    clone["infraAccBndlGrp"]["attributes"]["dn"] = re.sub(r"(?<=accbundle[-]).*",args.pgname,clone["infraAccBndlGrp"]["attributes"]["dn"])
-    clone["infraAccBndlGrp"]["attributes"]["name"] = args.pgname
-    clone["infraAccBndlGrp"]["attributes"]["rn"] = 'accbundle-'+args.pgname
-    clone["infraAccBndlGrp"]["attributes"]["status"] = "created"
-    clone["infraAccBndlGrp"]["attributes"]["descr"] = args.descr
+    clone[classTarget["class"]]["attributes"]["dn"] = re.sub(r"(?<="+classTarget["dnPrefix"]+"[-]).*",args.pgname,clone[classTarget["class"]]["attributes"]["dn"])
+    clone[classTarget["class"]]["attributes"]["name"] = args.pgname
+    clone[classTarget["class"]]["attributes"]["rn"] = classTarget["dnPrefix"]+'-'+args.pgname
+    clone[classTarget["class"]]["attributes"]["status"] = "created"
+    clone[classTarget["class"]]["attributes"]["descr"] = args.descr
 
     # Print clone json object
     if args.verbose:
         prettyPrint(clone)
 
     # Push cloned interface policy group to APIC
-    postUrl = '/api/node/mo/uni/infra/funcprof/accbundle-'+args.pgname+'.json'
+    postUrl = '/api/node/mo/uni/infra/funcprof/'+classTarget["dnPrefix"]+'-'+args.pgname+'.json'
     resp = session.push_to_apic(postUrl,clone)
 
     if not resp.ok:
