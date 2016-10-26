@@ -19,7 +19,11 @@ Args:
 --descr          (o) Description of the newly cloned policy group
 --verbose        (o) Enable verbose logging
 
+Prerequisites
 This script leverages the acitoolkit.  https://github.com/datacenter/acitoolkit.git
+
+Required PIP Libraries:
+prettytable
 
 Usage Examples:
 Clone by policy group name
@@ -40,6 +44,7 @@ import os
 import re
 import json
 import acitoolkit.acitoolkit as aci
+from prettytable import PrettyTable
 
 def prettyPrint(target):
     print json.dumps(target,sort_keys=True,indent=4)
@@ -95,8 +100,13 @@ def main():
     else:
         os.system('cls')
         while True:
+            selectList = PrettyTable(["ID", "Policy Group Name", "Description"])
+            selectList.align["Policy Group Name"] = "l"
+            selectList.align["Description"] = "l"
+            selectList.padding_width = 2
             for index,pg in enumerate(ret.json()["imdata"]):
-                print str(index + 1)+') '+pg["infraAccBndlGrp"]["attributes"]["name"]
+                selectList.add_row([str(index+1)+")",pg["infraAccBndlGrp"]["attributes"]["name"],pg["infraAccBndlGrp"]["attributes"]["descr"]])
+            print selectList
             selected = raw_input("\n\nPlease select interface policy group to be cloned: ")
             if int(selected) > 0 and int(selected) <= len(ret.json()["imdata"]):
                 # Grab the json response containing the policy group
